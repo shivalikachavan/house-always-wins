@@ -362,10 +362,10 @@ external information about trends in sports gambling.</p>
 <p>Our project utilizes two main sources spanning the period
 <strong>2017 through 2024</strong>:</p>
 <ul>
-<li><p><strong>Primary Source (Health Outcomes): The Behavioral Risk
-Factor Surveillance System (BRFSS)</strong>. This is an annual,
-state-based, nationwide telephone survey (conducted by the CDC)[<a
-href="https://www.cdc.gov/brfss/index.html"
+<li><p><strong>Primary Source (Health Outcome / Demographic Data): The
+Behavioral Risk Factor Surveillance System (BRFSS)</strong>. This is an
+annual, state-based, nationwide telephone survey (conducted by the
+CDC)[<a href="https://www.cdc.gov/brfss/index.html"
 class="uri">https://www.cdc.gov/brfss/index.html</a>], providing
 detailed self-reported health and behavioral data. We analyzed
 <strong>2.75 million</strong> completed interviews across all available
@@ -373,7 +373,7 @@ years. We chose this period as it spans the period before the
 <strong>2018 Supreme Court ruling (PASPA repeal)</strong>, which allowed
 many states to legalize sports betting.</p></li>
 <li><p><strong>Secondary Sources (Sports Gambling Policy and Market
-Activity)</strong>: We used data scraped from <a
+Activity Data)</strong>: We used data scraped from <a
 href="https://www.legalsportsreport.com/sports-betting-states/revenue/">Legal
 Sports Report</a> for market handle and manually compiled state
 legalization dates from the <a
@@ -388,67 +388,90 @@ the data. This process was handled by a dedicated <code>source/</code>
 code folder, with the following functions ensuring data quality and
 analytical readiness:</p>
 <ul>
-<li><strong>Standardization
-(<code>standardize_brfss_variable.R</code>):</strong> This function
-resolves inconsistencies in variable names across different survey years
-(e.g., handling both <code>HLTHPL1</code> and <code>HLTHPL2</code> which
-ask the same question) by renaming them to a single standard variable
-name.</li>
-<li><strong>Filtering (<code>filter_brfss_data.R</code>):</strong>
-Ensures only <strong>completed interviews</strong> (<span
-class="math inline">\(\text{dispcode} = 1100\)</span>) are retained and
-selects the core set of demographic and health columns.</li>
-<li><strong>Loading and Merging
-(<code>load_clean_brfss.R</code>):</strong> This critical function
-finalizes the dataset, recoding numerical responses (e.g., <span
-class="math inline">\(\text{1}\)</span> to “Male”), and
-<strong>connecting each interview date to the state’s legalization
-status</strong>.</li>
+<li><strong>Variable Standardization</strong><a
+href="https://github.com/shivalikachavan/p8105_final/blob/main/source/standardize_brfss_variable.R">standardize_brfss_variable.R</a>:
+This function renames variables that have more than one version of the
+same variable (e.g. <code>HLTHPL1</code> and <code>HLTHPL2</code>).
+Seeing that the variables differed in name only (the responses were
+coded in the same way), this was handled by renaming different versions
+to the single standardized name.
+(e.g. <code>hlthpl_standard</code>).</li>
+<li><strong>Filtering</strong> <a
+href="https://github.com/shivalikachavan/p8105_final/blob/main/source/filter_brfss_data.R">filter_brfss_data.R</a>:
+This function keeps the key variables for our study (unique survey
+identifiers, demographic/predictor variables, health/financial outcomes
+variables). It also filters for completed interviews
+(<code>dispcode = 1100</code>) and converts the date of the interview to
+a Date type variable.</li>
+<li><strong>Loading</strong> <a
+href="https://github.com/shivalikachavan/p8105_final/blob/main/source/load_clean_brfss.R">load_clean_brfss_data.R</a>:
+This function is used to load the cleaned data set into R by recoding
+variables (e.g. <code>1 ~ "Male"</code>), and connects the date of each
+interview to the status of legalization in that state. This
+<code>sb_legal</code> treatment variable is added by merging with <a
+href="https://github.com/shivalikachavan/p8105_final/blob/main/data/legal_sports_report/state_legalization_dates.csv">state_legalization_dates.csv</a>.</li>
 </ul>
 </div>
 <div id="analysis-data-dictionary" class="section level1">
 <h1>Analysis Data Dictionary</h1>
-<p>Our analysis focuses on the following four core outcomes and the
-primary treatment variable:</p>
+<p>Our analysis focuses on the following treatment variable (exposure),
+outcome variables (adverse health indicator), and demographic
+variables.</p>
 <div id="treatment-variable-exposure" class="section level2">
 <h2>Treatment Variable (Exposure)</h2>
 <ul>
-<li><strong><span
-class="math inline">\(\mathbf{sb\_legal}\)</span></strong> (Sports
-Betting Legal): A binary flag indicating whether the interview took
-place <strong>after</strong> sports betting was legalized in that state
-(<span class="math inline">\(\text{1}\)</span>) or before (<span
-class="math inline">\(\text{0}\)</span>).</li>
+<li><code>sb_legal</code>: A binary flag indicating whether the
+interview took place <strong>after</strong> sports betting was legalized
+in that state (<span class="math inline">\(\text{1}\)</span>) or before
+(<span class="math inline">\(\text{0}\)</span>).</li>
 </ul>
 </div>
 <div id="outcome-variables-adverse-health" class="section level2">
 <h2>Outcome Variables (Adverse Health)</h2>
 <p>We primarily use binary (Yes/No) measures to capture the prevalence
-of these adverse outcomes in the population:</p>
+of these adverse health outcomes in the population:</p>
 <ul>
-<li><strong><em>Poor Mental Health Day</em></strong>: The probability
-that a respondent reported <strong>at least 1 day</strong> of poor
-mental health in the past 30 days. (Raw Question: “for how many days
-during the past 30 days was your mental health not good?”)</li>
-<li><strong><em>Poor Physical Health Day</em></strong>: The probability
-that a respondent reported <strong>at least 1 day</strong> of poor
-physical health in the past 30 days. (Raw Question: “for how many days
-during the past 30 days was your physical health not good?”)</li>
-<li><strong><em>Depression</em></strong>: Whether a doctor or health
-professional ever diagnosed the respondent with a depressive
-disorder.</li>
-<li><strong><em>Binge Drinking</em></strong>: Whether the respondent met
-the threshold for heavy, episodic drinking (5 or more drinks for men, 4
-or more for women on one occasion).</li>
+<li><em>At least 1 poor mental health day</em>:
+<ul>
+<li>Survey Question: <em>“Now thinking about your mental health, which
+includes stress, depression, and problems with emotions, for how many
+days during the past 30 days was your mental health not good?”</em></li>
+<li>If the respondent reported 1+ to this question,
+<code>any_mental_health_not_good_days</code> is <code>TRUE</code>.</li>
+</ul></li>
+<li><em>At least 1 poor physical health day</em>:
+<ul>
+<li>Survey Question: <em>“Now thinking about your physical health, which
+includes physical illness and injury, for how many days during the past
+30 days was your physical health not good?”</em></li>
+<li>If the respondent reported 1+ to this question,
+<code>any_physical_health_not_good_days</code> is
+<code>TRUE</code>.</li>
+</ul></li>
+<li><em>Depression</em>:
+<ul>
+<li>Survey Question: <em>“Has a doctor or other health professional ever
+told you that you had a depressive disorder, including depression, major
+depression, dysthymia, or minor depression?”</em></li>
+<li>If the respondent reported “Yes” to this question,
+<code>has_depressive_disorder</code> is <code>TRUE</code>.</li>
+</ul></li>
+<li><em>Binge Drinking:</em>
+<ul>
+<li>Survey Question: <em>“Considering all alcoholic beverages that you
+drink, on average, how many times per month do you have 5 (for men) or 4
+(for women) or more drinks on one occasion?”</em></li>
+<li>If the respondent reported “Yes” to this question,
+<code>has_binge_drink</code> is <code>TRUE</code>.</li>
+</ul></li>
 </ul>
 </div>
-<div id="demographic-variables-predictors-in-regression"
-class="section level2">
-<h2>Demographic Variables / Predictors in Regression</h2>
+<div id="demographic-variables" class="section level2">
+<h2>Demographic Variables</h2>
 <p>To control for social and economic factors influencing health, we
 include individual-level demographic predictors (e.g., sex, age group,
 income level, education, and employment status) in our regression
-models.</p>
+models. These are important in our regression models.</p>
 </div>
 </div>
 
