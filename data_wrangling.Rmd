@@ -21,7 +21,7 @@ Our analysis relies on combining public health surveillance data with external i
 
 Our project utilizes two main sources spanning the period **2017 through 2024**:
 
-* **Primary Source (Health Outcome / Demographic Data): The Behavioral Risk Factor Surveillance System (BRFSS)**. This is an annual, state-based, nationwide telephone survey (conducted by the CDC)[https://www.cdc.gov/brfss/index.html], providing detailed self-reported health and behavioral data. We analyzed **`r round(nrow(brfss_data)/1000000, digits = 2)` million** completed interviews across all available years. We chose this period as it spans the period before the **2018 Supreme Court ruling (PASPA repeal)**, which allowed many states to legalize sports betting.
+* **Primary Source (Health Outcome / Demographic Data): The Behavioral Risk Factor Surveillance System (BRFSS)**. This is an annual, state-based, nationwide telephone survey [conducted by the CDC](https://www.cdc.gov/brfss/index.html), providing detailed self-reported health and behavioral data. We analyzed **`r round(nrow(brfss_data)/1000000, digits = 2)` million** completed interviews across all available years. We chose this period as it spans the period before the **2018 Supreme Court ruling (PASPA repeal)**, which allowed many states to legalize sports betting.
 
 * **Secondary Sources (Sports Gambling Policy and Market Activity Data)**: We used data scraped from [Legal Sports Report](https://www.legalsportsreport.com/sports-betting-states/revenue/) for market handle and manually compiled state legalization dates from the [American Gaming Association](https://www.americangaming.org/research/state-of-play-map/). 
 
