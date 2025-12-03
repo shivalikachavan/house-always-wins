@@ -11,8 +11,6 @@ navbar:
       href: additional_analysis.html
     - text: "So what?"
       href: conclusions.html
-    - text: "Detailed Report"
-      href: Final_Report.html
     - icon: fa-github fa-lg
       href: https://github.com/shivalikachavan/p8105_final
 output:
