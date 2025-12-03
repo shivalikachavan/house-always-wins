@@ -2,7 +2,7 @@
 title: "P8105 Final Report"
 author: "Shivalika Chavan, Angelica Bailey, Julia Gray"
 date: "2025-11-28"
-output: html_document
+output: github_document
 ---
 ```{r setup, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
@@ -35,8 +35,6 @@ state_pop = read_csv(here("data", "state_population_census.csv"))
 years_in_data = unique(year(pull(sb_rev_by_month, month)))
 
 outcome_vars = c("any_physical_health_not_good_days", "any_mental_health_not_good_days", "has_depressive_disorder", "has_binge_drink")
-
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
 # 1. Motivation
@@ -73,7 +71,39 @@ For information on sports betting we scraped data from [Legal Sports Report](htt
 The code to scrape Legal Sports Report is in `get_sports_betting_data.R`. The process was straightforward, with two summary tables at the top and separate tables for each state below. We pulled all html tables and iterated through the state headers to aggregate data for all states. There were a few states with no data (Florida, New Mexico, North Dakota, Washington, and Wisconsin).
 
 ##### Cleaning
-Across the years, there have been many iterations of the BRFSS survey, in terms of variable coding and questions asked. As a result, extensive cleaning and standardization was required. This process was handled with several [source](https://github.com/shivalikachavan/p8105_final/tree/main/source) files. More detailed explanations of this process are available in [brfss_data_exploration.Rmd](https://github.com/shivalikachavan/p8105_final/blob/main/eda/brfss_data_exploration.Rmd) and [brfss_data_cleaning.Rmd](https://github.com/shivalikachavan/p8105_final/blob/main/eda/brfss_data_cleaning.Rmd).
+Across the years, there have been many iterations of the BRFSS survey, in terms of variable coding and questions asked. As a result, extensive cleaning and standardization was required. This process was handled with several [source](https://github.com/shivalikachavan/p8105_final/tree/main/source) files. 
+
+The initial cleaning takes a while to run, so it is included but not evaluated here:
+```{r eval=FALSE}
+read_standardize_clean = function(datayear, filepath) {
+  
+  print(datayear)
+  
+  cleaned_data = 
+    read_xpt(filepath) |> 
+    janitor::clean_names() |> 
+    standardize_brfss_variable() |> 
+    filter_brfss_data(data_year = datayear)
+  
+  cleaned_data
+}
+
+data_years = 2017:2024
+filepaths <- here::here("data", "raw_data", "brfss", paste0("LLCP", data_years, ".XPT"))
+
+data = 
+  tibble(
+    data_year = data_years,
+    filepath = filepaths,
+    cleaned_dfs = map2(data_year, filepath, read_standardize_clean)
+  ) |> 
+  select(cleaned_dfs) |> 
+  unnest(cols = c(cleaned_dfs)) 
+
+data |> write_csv(here::here("data", "brfss_clean_2017_2024.csv")) # has some duplicate variables, handled in load/clean step
+```
+
+This chunk takes the downloaded .XPT files available through the CDC website (~9 GB total!), standardizes and filters the individual years, concatenates the data from each year, and saves the final dataset as a csv. This cleaned csv is then zipped and loaded in subsequent operations. A more detailed explanations of this process are available in [brfss_data_exploration.Rmd](https://github.com/shivalikachavan/p8105_final/blob/main/eda/brfss_data_exploration.Rmd) and [brfss_data_cleaning.Rmd](https://github.com/shivalikachavan/p8105_final/blob/main/eda/brfss_data_cleaning.Rmd).
 
   * [standardize_brfss_variable.R](https://github.com/shivalikachavan/p8105_final/blob/main/source/standardize_brfss_variable.R): This function renames variables that have more than one version of the same variable (e.g. `HLTHPL1` and `HLTHPL2`). Seeing that the variables differed in name only (the responses were coded in the same way), this was handled by renaming different versions to the single standardized name. (e.g. `hlthpl_standard`). 
   * [filter_brfss_data.R](https://github.com/shivalikachavan/p8105_final/blob/main/source/filter_brfss_data.R): This function keeps the key variables for our study (unique survey identifiers, demographic/predictor variables, health/financial outcomes variables). It also filters for completed interviews (`dispcode = 1100`) and converts the date of the interview to a Date type variable. 
@@ -127,6 +157,95 @@ sb_rev_by_month |>
   ) +
   theme_minimal()
 ```
+
+The plot shows handle going up with the number of states that have legalized sports betting. It also clearly shows strong cyclical trends in total handle, suggesting that the volume of betting is highly sensitive to the sports calendar.
+
+##### Understanding Spikes in Sports Betting Handle
+
+In addition to the BRFSS survey, we looked at sports betting data (Total Handle) to understand the cyclic nature of the betting market that could influence mental health outcomes. The purpose is to determine if the spikes in betting activity align with major sports seasons.
+
+###### NFL Season 
+```{r}
+nfl_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, "09", "01", sep = "-")),
+    ymd(paste(years_in_data, "01", "01", sep = "-")),
+    ymd(paste(years_in_data, "02", "01", sep = "-"))
+    ),
+  
+  type = case_when(
+    month(date) == 2 ~ "Solid", 
+    TRUE ~ "Dotted" 
+    ),
+  
+  label = case_when(
+    month(date) == 9 ~ "Start of Season",
+    month(date) == 1 ~ "End of Season",
+    month(date) == 2 ~ "Super Bowl"
+    )
+  ) |> 
+  filter(date >= min(sb_rev_by_month$month), date <= max(sb_rev_by_month$month))
+
+
+sb_rev_by_month |>
+  mutate(handle_B = handle / 1e9) |>
+  ggplot(aes(x = month, y = handle_B)) +
+  geom_line() +
+  ylab("Handle (in USD, Billions)") +
+  geom_vline(
+    data = nfl_event_dates,
+    aes(xintercept = date, linetype = type),
+    color = "#D50A0A",
+    show.legend = TRUE 
+  ) +
+  scale_linetype_manual(
+    name = "NFL Season", 
+    values = c("Dotted" = "dotted", "Solid" = "solid"), 
+    labels = c("Dotted" = "NFL Regular Season", "Solid" = "Super Bowl") 
+  ) + 
+  theme(legend.position="bottom")
+```
+
+The largest peak in the betting handle clearly coincides with the NFL regular season in September, and a smaller dip aligns with the season's end around the Super Bowl. 
+
+###### NCAA March Madness
+```{r}
+ncaa_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, "03", "01", sep = "-"))
+    ),
+  
+  type = case_when(
+    month(date) == 3 ~ "Solid"
+    ),
+  
+  label = case_when(
+    month(date) == 3 ~ "March Madness"
+    )
+  ) |> 
+  filter(date >= min(sb_rev_by_month$month), date <= max(sb_rev_by_month$month))
+
+
+sb_rev_by_month |>
+  mutate(handle_B = handle / 1e9) |>
+  ggplot(aes(x = month, y = handle_B)) +
+  geom_line() +
+  ylab("Handle (in USD, Billions)") +
+  geom_vline(
+    data = ncaa_event_dates,
+    aes(xintercept = date, linetype = type),
+    color = "#009CDE",
+    show.legend = TRUE 
+  ) +
+  scale_linetype_manual(
+    name = "NCAA Events", 
+    values = c("Solid" = "solid"), 
+    labels = c("Solid" = "March Madness") 
+  ) + 
+  theme(legend.position="bottom")
+```
+
+A secondary peak in betting handle occurs during March Madness. This is important because it represents a period of intense, short-term betting interest. 
 
 ##### Cumulative Handle by State
 
@@ -240,106 +359,6 @@ sb_rev_by_state_month |>
 ```
 
 We can see that Nevada and New Jersey have the highest handle per capita.
-
-##### Understanding Spikes in Sports Betting Handle
-
-In addition to the BRFSS survey, we looked at sports betting data (Total Handle) to understand the cyclic nature of the betting market that could influence mental health outcomes. The purpose is to determine if the spikes in betting activity align with major sports seasons.
-
-###### Overall 
-```{r}
-sb_rev_by_month |> 
-  mutate(handle_B = handle / 1e9) |> 
-  ggplot(aes(x = month, y = handle_B)) + 
-  geom_line() + 
-  ylab("Handle (in USD, Billions)") + 
-  labs(title = "Total Monthly Sports Betting Handle (USD)")
-```
-
-The plot clearly shows strong cyclical trends in total handle, suggesting that the volume of betting is highly sensitive to the sports calendar.
-
-###### NFL Season 
-```{r}
-nfl_event_dates = tibble(
-  date = c(
-    ymd(paste(years_in_data, "09", "01", sep = "-")),
-    ymd(paste(years_in_data, "01", "01", sep = "-")),
-    ymd(paste(years_in_data, "02", "01", sep = "-"))
-    ),
-  
-  type = case_when(
-    month(date) == 2 ~ "Solid", 
-    TRUE ~ "Dotted" 
-    ),
-  
-  label = case_when(
-    month(date) == 9 ~ "Start of Season",
-    month(date) == 1 ~ "End of Season",
-    month(date) == 2 ~ "Super Bowl"
-    )
-  ) |> 
-  filter(date >= min(sb_rev_by_month$month), date <= max(sb_rev_by_month$month))
-
-
-sb_rev_by_month |>
-  mutate(handle_B = handle / 1e9) |>
-  ggplot(aes(x = month, y = handle_B)) +
-  geom_line() +
-  ylab("Handle (in USD, Billions)") +
-  geom_vline(
-    data = nfl_event_dates,
-    aes(xintercept = date, linetype = type),
-    color = "#D50A0A",
-    show.legend = TRUE 
-  ) +
-  scale_linetype_manual(
-    name = "NFL Season", 
-    values = c("Dotted" = "dotted", "Solid" = "solid"), 
-    labels = c("Dotted" = "NFL Regular Season", "Solid" = "Super Bowl") 
-  ) + 
-  theme(legend.position="bottom")
-```
-
-The largest peak in the betting handle clearly coincides with the NFL regular season in September, and a smaller dip aligns with the season's end around the Super Bowl. 
-
-###### NCAA March Madness
-```{r}
-ncaa_event_dates = tibble(
-  date = c(
-    ymd(paste(years_in_data, "03", "01", sep = "-"))
-    ),
-  
-  type = case_when(
-    month(date) == 3 ~ "Solid"
-    ),
-  
-  label = case_when(
-    month(date) == 3 ~ "March Madness"
-    )
-  ) |> 
-  filter(date >= min(sb_rev_by_month$month), date <= max(sb_rev_by_month$month))
-
-
-sb_rev_by_month |>
-  mutate(handle_B = handle / 1e9) |>
-  ggplot(aes(x = month, y = handle_B)) +
-  geom_line() +
-  ylab("Handle (in USD, Billions)") +
-  geom_vline(
-    data = ncaa_event_dates,
-    aes(xintercept = date, linetype = type),
-    color = "#009CDE",
-    show.legend = TRUE 
-  ) +
-  scale_linetype_manual(
-    name = "NCAA Events", 
-    values = c("Solid" = "solid"), 
-    labels = c("Solid" = "March Madness") 
-  ) + 
-  theme(legend.position="bottom")
-
-```
-
-A secondary peak in betting handle occurs during March Madness. This is important because it represents a period of intense, short-term betting interest. 
 
 ## BRFSS
 
