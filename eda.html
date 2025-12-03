@@ -9,11 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Shivalika Chavan" />
 
 <meta name="date" content="2025-12-02" />
 
-<title>EDA</title>
+<title>Exploratory Data Analysis</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -31,7 +30,11 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -220,7 +223,73 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
 
 
 
@@ -230,6 +299,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -274,45 +353,750 @@ $(document).ready(function () {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
-<h1 class="title toc-ignore">EDA</h1>
-<h4 class="author">Shivalika Chavan</h4>
+
+<h1 class="title toc-ignore">Exploratory Data Analysis</h1>
 <h4 class="date">2025-12-02</h4>
 
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting
-syntax for authoring HTML, PDF, and MS Word documents. For more details
-on using R Markdown see <a href="http://rmarkdown.rstudio.com"
-class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be
-generated that includes both content as well as the output of any
-embedded R code chunks within the document. You can embed an R code
-chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
+<p>Load packages and import cleaned dataframes.</p>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+
+library(tidyverse)
+library(haven)
+library(lubridate)
+library(here)
+library(patchwork)
+library(epitools)
+library(ggcorrplot)
+library(patchwork)
+library(plotly)
+
+source(here(&quot;source&quot;, &quot;load_clean_brfss.R&quot;))
+source(here(&quot;source&quot;, &quot;filter_brfss_data.R&quot;))
+source(here(&quot;source&quot;, &quot;standardize_brfss_variable.R&quot;))
+source(here(&quot;source&quot;, &quot;prop_test_functions.R&quot;))
+source(here(&quot;source&quot;, &quot;run_fishers_test.R&quot;))
+
+brfss_data = load_clean_brfss(here(&quot;data&quot;, &quot;brfss_clean_2017_2024.csv.zip&quot;))
+state_fips = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;state_fips.csv&quot;))
+
+state_legal_dates = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &#39;state_legalization_dates.csv&#39;))
+sb_rev_by_month = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;sb_rev_by_month.csv&quot;))
+sb_rev_by_state_month = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;,&#39;sb_rev_by_state_month.csv&#39;))
+sb_rev_by_state = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;sb_rev_by_state.csv&quot;))
+state_pop = read_csv(here(&quot;data&quot;, &quot;state_population_census.csv&quot;))
+
+years_in_data = unique(year(pull(sb_rev_by_month, month)))
+
+outcome_vars = c(&quot;any_physical_health_not_good_days&quot;, &quot;any_mental_health_not_good_days&quot;, &quot;has_depressive_disorder&quot;, &quot;has_binge_drink&quot;)</code></pre>
+<div id="sports-betting" class="section level2">
+<h2>Sports Betting</h2>
+<div id="total-handle-and-number-of-states-with-legal-sports-betting"
+class="section level3">
+<h3>Total Handle and Number of States with Legal Sports Betting</h3>
+<p>We begin our analysis by exploring trends in the sports betting
+industry itself and how these trends align with the growing number of
+states that legalized sports betting over time.</p>
+<pre class="r"><code>get_n_states_legal = function(input_month) {
+  n_states_legal = nrow(filter(state_legal_dates, first_start &lt;= input_month))
+}
+
+sb_rev_by_month = sb_rev_by_month |&gt; 
+  mutate(
+    n_states_legal = sapply(month, get_n_states_legal)
+  ) 
+
+scale_factor = max(pull(sb_rev_by_month,n_states_legal)) / max(pull(sb_rev_by_month,handle))
+
+sb_rev_by_month |&gt; 
+  ggplot(aes(x = month)) +
+  geom_line(aes(y=handle, color=&quot;handle&quot;)) +
+  geom_line(aes(y=n_states_legal / scale_factor, color=&quot;legal&quot;)) +
+  scale_y_continuous(
+    name = &quot;Handle ($)&quot;,
+    sec.axis = sec_axis(~ . * scale_factor, name=&quot;States Legal&quot;)
+  ) +
+  #scale_color_(name = NULL) +
+  scale_color_discrete(name = NULL, labels = c(&quot;handle&quot; = &quot;Total Handle&quot;, &quot;legal&quot; = &quot;n States Legal&quot;)) +
+  labs(
+    title = &quot;Total Sports Handle and Number of States with Legal Sports Betting&quot;,
+    x = &quot;Date&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>The plot shows handle going up with the number of states that have
+legalized sports betting. It also clearly shows strong cyclical trends
+in total handle, suggesting that the volume of betting is highly
+sensitive to the sports calendar.</p>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="eda_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the
-code chunk to prevent printing of the R code that generated the
-plot.</p>
+<div id="understanding-spikes-in-sports-betting-handle"
+class="section level3">
+<h3>Understanding Spikes in Sports Betting Handle</h3>
+<p>In addition to the BRFSS survey, we looked at sports betting data
+(Total Handle) to understand the cyclic nature of the betting market
+that could influence mental health outcomes. The purpose is to determine
+if the spikes in betting activity align with major sports seasons.</p>
+<div id="nfl-season" class="section level4">
+<h4>NFL Season</h4>
+<pre class="r"><code>nfl_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, &quot;09&quot;, &quot;01&quot;, sep = &quot;-&quot;)),
+    ymd(paste(years_in_data, &quot;01&quot;, &quot;01&quot;, sep = &quot;-&quot;)),
+    ymd(paste(years_in_data, &quot;02&quot;, &quot;01&quot;, sep = &quot;-&quot;))
+    ),
+  
+  type = case_when(
+    month(date) == 2 ~ &quot;Solid&quot;, 
+    TRUE ~ &quot;Dotted&quot; 
+    ),
+  
+  label = case_when(
+    month(date) == 9 ~ &quot;Start of Season&quot;,
+    month(date) == 1 ~ &quot;End of Season&quot;,
+    month(date) == 2 ~ &quot;Super Bowl&quot;
+    )
+  ) |&gt; 
+  filter(date &gt;= min(sb_rev_by_month$month), date &lt;= max(sb_rev_by_month$month))
+
+
+sb_rev_by_month |&gt;
+  mutate(handle_B = handle / 1e9) |&gt;
+  ggplot(aes(x = month, y = handle_B)) +
+  geom_line() +
+  ylab(&quot;Handle (in USD, Billions)&quot;) +
+  geom_vline(
+    data = nfl_event_dates,
+    aes(xintercept = date, linetype = type),
+    color = &quot;#D50A0A&quot;,
+    show.legend = TRUE 
+  ) +
+  scale_linetype_manual(
+    name = &quot;NFL Season&quot;, 
+    values = c(&quot;Dotted&quot; = &quot;dotted&quot;, &quot;Solid&quot; = &quot;solid&quot;), 
+    labels = c(&quot;Dotted&quot; = &quot;NFL Regular Season&quot;, &quot;Solid&quot; = &quot;Super Bowl&quot;) 
+  ) + 
+  theme(legend.position=&quot;bottom&quot;)</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>The largest peak in the betting handle clearly coincides with the NFL
+regular season in September, and a smaller dip aligns with the season’s
+end around the Super Bowl.</p>
+<div id="ncaa-march-madness" class="section level5">
+<h5>NCAA March Madness</h5>
+<pre class="r"><code>ncaa_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, &quot;03&quot;, &quot;01&quot;, sep = &quot;-&quot;))
+    ),
+  
+  type = case_when(
+    month(date) == 3 ~ &quot;Solid&quot;
+    ),
+  
+  label = case_when(
+    month(date) == 3 ~ &quot;March Madness&quot;
+    )
+  ) |&gt; 
+  filter(date &gt;= min(sb_rev_by_month$month), date &lt;= max(sb_rev_by_month$month))
+
+
+sb_rev_by_month |&gt;
+  mutate(handle_B = handle / 1e9) |&gt;
+  ggplot(aes(x = month, y = handle_B)) +
+  geom_line() +
+  ylab(&quot;Handle (in USD, Billions)&quot;) +
+  geom_vline(
+    data = ncaa_event_dates,
+    aes(xintercept = date, linetype = type),
+    color = &quot;#009CDE&quot;,
+    show.legend = TRUE 
+  ) +
+  scale_linetype_manual(
+    name = &quot;NCAA Events&quot;, 
+    values = c(&quot;Solid&quot; = &quot;solid&quot;), 
+    labels = c(&quot;Solid&quot; = &quot;March Madness&quot;) 
+  ) + 
+  theme(legend.position=&quot;bottom&quot;)</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>A secondary peak in betting handle occurs during March Madness. This
+is important because it represents a period of intense, short-term
+betting interest.</p>
+</div>
+</div>
+</div>
+<div id="cumulative-handle-by-state" class="section level3">
+<h3>Cumulative Handle by State</h3>
+<p>This code uses plotly, which doesn’t render to github document. There
+is a static image with no interactivity:</p>
+<pre class="r"><code>sb_rev_by_state = sb_rev_by_state |&gt; 
+  filter(market != &quot;Total&quot;) |&gt; 
+  left_join(state_fips, join_by(market == state)) |&gt; 
+  left_join(
+    select(state_legal_dates, state, first_start, online, offline), 
+    join_by(market == state)) |&gt; 
+  mutate(
+    legal_type = case_when(
+      !is.na(online) &amp; !is.na(offline) ~ &quot;both&quot;,
+      !is.na(offline) ~ &quot;offline&quot;,
+      !is.na(online) ~&quot;online&quot;
+    )
+  ) |&gt; 
+  mutate(
+    hover = paste(&quot;&lt;b&gt;&quot;,market,&quot;&lt;/b&gt;&quot;, &#39;&lt;br&gt;&#39;, 
+                  &quot;Handle: $&quot;, format(handle / 1000000000, digits = 2), &quot;B&quot;, &quot;&lt;br&gt;&quot;, 
+                  &quot;Revenue: $&quot;, format(revenue / 100000000, digits = 2), &quot;M&quot;, &quot;&lt;br&gt;&quot;,
+                  &quot;Hold: &quot;, hold, &#39;%&lt;br&gt;&#39;, 
+                  &quot;Taxes: &quot;, format(taxes / 100000000, digits = 2), &quot;M&quot;,
+                  &quot;&lt;extra&gt;&lt;/extra&gt;&quot;)
+    )
+                      
+# give state boundaries a white border
+l = list(color = toRGB(&quot;white&quot;), width = 2)
+
+# specify some map projection/options
+g = list(
+  scope = &#39;usa&#39;,
+  projection = list(type = &#39;albers usa&#39;),
+  showlakes = TRUE,
+  lakecolor = toRGB(&#39;white&#39;)
+)
+
+fig = plot_geo(sb_rev_by_state, locationmode = &#39;USA-states&#39;)
+fig = fig |&gt; 
+  add_trace(
+    z = ~handle, hovertemplate = ~hover, #text = ~hover, 
+    locations = ~abbr,
+    color = ~handle, colorscale=&quot;Viridis&quot;
+  ) |&gt; 
+  colorbar(title = &quot;Millions USD&quot;) |&gt; 
+  layout(
+    title = &#39;Cumulative Handle by State&#39;, #&lt;br&gt;(Hover for breakdown)&#39;,
+    geo = g
+  )
+
+fig</code></pre>
+</div>
+<div id="handle-by-state-in-2024" class="section level3">
+<h3>Handle by State in 2024</h3>
+<pre class="r"><code>sb_rev_by_state_month |&gt; 
+  mutate(year = year(month)) |&gt;   # Extract year
+  group_by(state, year) |&gt;        # Group by year
+  summarize(
+    total_handle = sum(handle, na.rm = TRUE),
+  ) |&gt; 
+  filter(year == 2024) |&gt; 
+  ungroup() |&gt; 
+  mutate(
+    state = fct_reorder(state, total_handle)
+  ) |&gt; 
+  ggplot(aes(x=state, y= total_handle)) +
+  coord_flip() +
+  geom_bar(stat=&quot;identity&quot;) +
+  labs(
+    title = &quot;Sports Betting Handle by State in 2024&quot;,
+    x = &quot;State&quot;,
+    y = &quot;Handle ($)&quot;
+  ) +
+  theme_minimal()
+## `summarise()` has grouped output by &#39;state&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>We can see New York has the highest handle which makes sense since it
+is the most populous state. We can get a sense of the popularity of
+sports gambling by looking at total handle per capita using US census
+data for total population by state.</p>
+</div>
+<div id="handle-by-state-per-capita-in-2024" class="section level3">
+<h3>Handle by State per Capita in 2024</h3>
+<pre class="r"><code>sb_rev_by_state_month |&gt; 
+  mutate(year = year(month)) |&gt;  
+  group_by(state, year) |&gt;                 
+  summarize(
+    total_handle = sum(handle, na.rm = TRUE),
+  ) |&gt; 
+  filter(year == 2024) |&gt; 
+  ungroup() |&gt; 
+  left_join(select(state_pop, state, &quot;2024&quot;), by = &quot;state&quot;) |&gt; 
+  rename(population_2024 = &#39;2024&#39;) |&gt; 
+  mutate(
+    handle_per_capita = total_handle / population_2024,
+    state = fct_reorder(state, handle_per_capita)
+  ) |&gt; 
+  ggplot(aes(x=state, y= handle_per_capita)) +
+  coord_flip() +
+  geom_bar(stat=&quot;identity&quot;) +
+  labs(
+    title = &quot;Sports Betting Handle per Capita in 2024&quot;,
+    x = &quot;State&quot;,
+    y = &quot;Handle ($) per capita&quot;
+  ) +
+  theme_minimal()
+## `summarise()` has grouped output by &#39;state&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>We can see that Nevada and New Jersey have the highest handle per
+capita.</p>
+</div>
+</div>
+<div id="brfss" class="section level2">
+<h2>BRFSS</h2>
+<div id="data-completeness" class="section level3">
+<h3>Data Completeness</h3>
+<p>One of our primary concerns with data was ensuring that the key
+outcome variables were reported consistently from 2017 to 2024.</p>
+<pre class="r"><code>all_outcome_vars = c(&quot;general_health&quot;, &quot;general_health_refactored&quot;, &quot;michd&quot;,
+                 &quot;physical_health&quot;, &quot;physical_health_not_good_days&quot;, &quot;leisure_physical_activity_last_30_days&quot;,
+                 &quot;mental_health&quot;, &quot;mental_health_not_good_days&quot;, &quot;poor_health&quot;, &quot;depressive_disorder&quot;,
+                 &quot;difficulty_self_care&quot;, &quot;life_satisfaction&quot;, &quot;emotional_support&quot;, &quot;loneliness&quot;, &quot;binge_drink&quot;,
+                 &quot;heavy_drink&quot;, &quot;lost_reduced_employment&quot;, &quot;financial_strain_bills&quot;, &quot;financial_strain_utilities&quot;)
+
+summarize_outcome_by_year = function(outcome_var, df = brfss_data) {
+  
+  outcome_sym = rlang::sym(outcome_var) 
+  
+  df |&gt; 
+    group_by(year(date), !!outcome_sym) |&gt; 
+    summarize(n = n(), .groups = &quot;drop&quot;) |&gt; 
+    pivot_wider(
+      names_from = `year(date)`, 
+      values_from = n
+    )
+}
+
+find_complete_years = function(outcome_var, summary_df){
+  
+  outcome_sym = rlang::sym(outcome_var) 
+  
+  summary_df |&gt; 
+    filter(!is.na(!!outcome_sym)) |&gt; 
+    summarize(
+      across(
+        .cols = everything(),
+        .fns = ~ !all(is.na(.x)) 
+        )
+      )|&gt;
+    select(-!!outcome_sym) |&gt; 
+    pivot_longer(
+      cols = everything(),
+      names_to = &quot;year&quot;,
+      values_to = &quot;is_complete&quot;
+      ) |&gt; 
+    summarize(
+      n_complete_years = sum(is_complete)
+      ) |&gt; 
+    pull(n_complete_years)
+    
+}
+
+complete_outcomes = tibble(
+  outcome = all_outcome_vars,
+  summary = map(all_outcome_vars, summarize_outcome_by_year),
+  n_complete_years = map2(all_outcome_vars, summary, find_complete_years)
+  ) |&gt; 
+  arrange(n_complete_years) |&gt; 
+  filter(
+    n_complete_years == 8
+  ) |&gt; 
+  pull(outcome)
+
+setdiff(all_outcome_vars, complete_outcomes)
+## [1] &quot;life_satisfaction&quot;          &quot;emotional_support&quot;         
+## [3] &quot;loneliness&quot;                 &quot;lost_reduced_employment&quot;   
+## [5] &quot;financial_strain_bills&quot;     &quot;financial_strain_utilities&quot;</code></pre>
+<p>Some of the outcome variables we were interested in looking at like
+financial strain, were not available in all years. In order to maintain
+a robust analysis over time, we were limited to those variables that
+were available over all years. Our 4 primary outcomes are available over
+all years.</p>
+</div>
+<div id="distribution-of-key-outcomes-rationale-for-binary-outcomes"
+class="section level3">
+<h3>Distribution of Key Outcomes + Rationale for Binary Outcomes</h3>
+<pre class="r"><code>brfss_data |&gt;
+  filter(year(date) %in% c(2017, 2024)) |&gt;
+  select(year = date, mental_health, physical_health) |&gt;
+  mutate(
+    year = factor(year(year)),
+    mental_health = ifelse(mental_health &gt; 30, 31, mental_health), 
+    physical_health = ifelse(physical_health &gt; 30, 31, physical_health)
+  ) |&gt;
+  pivot_longer(
+    cols = c(mental_health, physical_health),
+    names_to = &quot;outcome&quot;,
+    values_to = &quot;n_bad_days&quot;
+  ) |&gt;
+  ggplot(aes(x = n_bad_days, fill = year)) +
+  geom_bar(position = &quot;dodge&quot;) +
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 31), labels = c(0, 7, 14, 21, 31)) +
+  facet_wrap(~outcome) +
+  labs(
+    title = &quot;Distribution of Poor Health Days (2017 vs. 2024)&quot;,
+    x = &quot;Number of Days of Poor Health (Past 30 Days)&quot;,
+    y = &quot;Count of Respondents&quot;
+  )
+## Warning: Removed 27288 rows containing non-finite outside the scale range
+## (`stat_count()`).</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Given the concentration of responses at 0 days, we decided to use a
+binary outcome variable like
+<code>any_physical_health_not_good_days</code> as the outcome variable.
+This also follows what Couture, et. al. used in their analysis. It also
+simplified statistical tests that we decided to do later on.</p>
+</div>
+<div id="correlation-analysis" class="section level3">
+<h3>Correlation Analysis</h3>
+<p>To understand relationships among the health outcome variables, we
+conducted a correlation analysis. Initially, we computed separate
+correlation matrices for males and females to assess whether the
+relationships among health outcomes differed meaningfully by sex.
+However, this stratification did not reveal significant differences,
+therefore, we analyzed correlations using the full sample.</p>
+<pre class="r"><code>#selecting variables
+correlation_vars = c(&quot;general_health&quot;,&quot;general_health_refactored&quot;, 
+                     &quot;mental_health&quot;, &quot;mental_health_not_good_days&quot;,
+                     &quot;physical_health&quot;, &quot;physical_health_not_good_days&quot;,
+                     &quot;poor_health&quot;, &quot;depressive_disorder&quot;,
+                     &quot;difficulty_self_care&quot;, &quot;michd&quot;,
+                     &quot;binge_drink&quot;, &quot;heavy_drink&quot;, 
+                     &quot;leisure_physical_activity_last_30_days&quot;)
+
+
+brfss_all = brfss_data |&gt; 
+  select(all_of(correlation_vars)) |&gt; 
+  mutate_all(as.numeric)
+
+cor(brfss_all, 
+      method = &quot;spearman&quot;,
+      use = &quot;pairwise.complete.obs&quot;) |&gt; 
+  ggcorrplot(
+    type = &quot;upper&quot;,
+    method = &quot;square&quot;,
+    lab = TRUE,
+    lab_size = 2.5,
+    tl.cex = 10,
+    title = &quot;Correlations&quot;
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>The correlation matrix revealed redundancy with pairs of variables,
+e.g., <code>mental_health</code>
+vs. <code>mental_health_not_good_days</code> (r = 0.99). Including both
+variables in regression models would introduce multicollinearity, so one
+variable from each pair was selected.</p>
+<p>We can see that <code>depressive_disorder</code> showed the strongest
+positive correlation with <code>mental_health</code>(r = 0.44).
+<code>poor_health</code> showed a similar pattern correlating the
+strongest with <code>physical_health</code> (r = 0.43). These trends may
+reflect how individuals reporting depressive symptoms or more days where
+poor health negatively impacted usual activities also tend to report
+more poor physical and mental health days.</p>
+<p>On the other hand, <code>heavy_drink</code> and
+<code>binge_drink</code> showed weak correlations with most other health
+outcomes.</p>
+<p>Note: BRFSS contains a variable <code>general_health</code> which is
+a Likert scale from 1-6 with 1 being “Good Health” and 6 being “Poor
+Health.” There is also a <code>general_health_refactored</code> column
+with 1 being “Good Health” and 2 being “Poor Health.”
+<code>general_health_refactored</code> shows negative correlations with
+variables like <code>physical_health</code> and
+<code>mental_health</code>. As general health gets better (lower score),
+the number of bad health days goes up. This is an unexpected result. We
+can see that <code>general_health</code> has little correlation between
+most other health outcomes, which was surprising. We may be seeing these
+trends since <code>general_health_refactored</code> has fewer, more
+broadly defined categories. The more narrowly defined
+<code>general_health</code> shows minimal correlation. If we were to do
+future analyses, we would want to use the narrowly defined variable
+<code>general_health.</code></p>
+</div>
+<div
+id="distribution-of-primary-health-outcomes-by-demographic-variables"
+class="section level3">
+<h3>Distribution of Primary Health Outcomes by Demographic
+Variables</h3>
+<p>We explored how our primary health outcomes were distributed across
+demographic and socioeconomic groups. We used
+<code>mental_health_not_good_days</code>,
+<code>physical_health_not_good_days</code>,
+<code>depressive_disorder</code>, and <code>binge_drink</code> based on
+the consistent availability of these health outcomes across
+2017-2024.</p>
+<p>We used stacked bar plots to visualize these distributions with each
+bar representing a demographic category, and the bar divided into
+segments to show the proportion of individuals falling into each health
+outcome.</p>
+<p>To efficiently visualize the distribution of these health outcome
+across any demographic variable, we constructed a set of plotting
+functions for each outcome. Here are some notable findings:</p>
+<pre class="r"><code>#Bad mental health days outcome
+plot_mental_health = function(demo_var, plot_title) {
+  
+    brfss_data |&gt; 
+    filter(
+      !is.na(.data[[demo_var]]),
+      !is.na(mental_health_not_good_days)
+    ) |&gt; 
+  
+  ggplot(aes(x = .data[[demo_var]], fill = mental_health_not_good_days)) +
+    geom_bar(position = &quot;fill&quot;) +
+    scale_fill_manual(
+    values = c(
+      &quot;0&quot; = &quot;darkolivegreen2&quot;,
+      &quot;1-13&quot; = &quot;yellow2&quot;,
+      &quot;14+&quot; = &quot;brown2&quot;
+    ),
+    name = &quot;# of Bad Mental Health Days&quot;
+  ) +
+    labs(
+      x = demo_var,
+      y = &quot;Proportion&quot;,
+      title = plot_title
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+}
+
+#Bad physical health days outcome
+plot_physical_health = function(brfss_data, demo_var, plot_title) {
+  
+    brfss_data |&gt; 
+    drop_na(physical_health_not_good_days) |&gt; 
+    drop_na(.data[[demo_var]]) |&gt; 
+  
+  ggplot(aes(x = .data[[demo_var]], fill = physical_health_not_good_days)) +
+    geom_bar(position = &quot;fill&quot;) +
+    scale_fill_manual(
+    values = c(
+      &quot;0&quot; = &quot;darkolivegreen2&quot;,
+      &quot;1-13&quot; = &quot;yellow2&quot;,
+      &quot;14+&quot; = &quot;brown2&quot;
+    ),
+    name = &quot;# of Bad Physical Health Days&quot;
+  ) +
+    labs(
+      x = demo_var,
+      y = &quot;Proportion&quot;,
+      title = plot_title
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+}
+
+#Depressive disorder outcome
+plot_depression = function(demo_var, plot_title) {
+  
+    brfss_data |&gt; 
+    mutate(
+      income_level = factor(
+        income_level,
+        levels = c(
+          &quot;Less than $10,000&quot;,
+          &quot;$10,000 to &lt; $15,000&quot;,
+          &quot;$15,000 to &lt; $20,000&quot;,
+          &quot;$20,000 to &lt; $25,000&quot;,
+          &quot;$25,000 to &lt; $35,000&quot;,
+          &quot;$35,000 to &lt; $50,000&quot;,
+          &quot;$50,000 to &lt; $75,000&quot;,
+          &quot;$75,000 or more&quot;)
+        )
+      ) |&gt; 
+    drop_na(depressive_disorder) |&gt; 
+    drop_na(.data[[demo_var]]) |&gt; 
+  
+  ggplot(aes(x = .data[[demo_var]], fill = depressive_disorder)) +
+    geom_bar(position = &quot;fill&quot;) +
+    scale_fill_manual(
+    values = c(
+      &quot;No&quot; = &quot;steelblue2&quot;,
+      &quot;Yes&quot; = &quot;red4&quot;
+    ),
+    name = &quot;Depressive Disorder&quot;
+  ) +
+    labs(
+      x = demo_var,
+      y = &quot;Proportion&quot;,
+      title = plot_title
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+#Binge drinker outcome
+plot_bingedrink = function(demo_var, plot_title) {
+  
+    brfss_data |&gt; 
+    drop_na(binge_drink) |&gt; 
+    drop_na(.data[[demo_var]]) |&gt; 
+  
+  ggplot(aes(x = .data[[demo_var]], fill = binge_drink)) +
+    geom_bar(position = &quot;fill&quot;) +
+    scale_fill_manual(
+    values = c(
+      &quot;No&quot; = &quot;steelblue2&quot;,
+      &quot;Yes&quot; = &quot;red4&quot;
+    ),
+    name = &quot;Binge Drinker&quot;
+  ) +
+    labs(
+      x = demo_var,
+      y = &quot;Proportion&quot;,
+      title = plot_title
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}</code></pre>
+<div id="distribution-of-bad-mental-health-days-by-age-group"
+class="section level4">
+<h4>Distribution of Bad Mental Health Days by Age Group:</h4>
+<pre class="r"><code>brfss_data |&gt; 
+  filter(
+    !is.na(age_group_5yr),
+    !is.na(mental_health_not_good_days)
+  ) |&gt; 
+  
+  ggplot(aes(x = age_group_5yr, fill = mental_health_not_good_days)) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(
+      &quot;0&quot; = &quot;darkolivegreen2&quot;,
+      &quot;1-13&quot; = &quot;yellow2&quot;,
+      &quot;14+&quot; = &quot;brown2&quot;
+    ),
+    name = &quot;# of Bad Mental Health Days&quot;
+  ) +
+  labs(
+    x = &quot;Age Group&quot;,
+    y = &quot;Proportion&quot;,
+    title = &quot;Distribution of Bad Mental Health Days by Age Group&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>The 18-24 and 25-29 age groups have the largest proportion of
+individuals reporting 1-13 and 14+ bad mental health days. Younger
+adults report the highest frequency of bad mental health days, while
+older adults report the lowest.</p>
+</div>
+<div id="distribution-of-bad-physical-health-days-by-sex"
+class="section level4">
+<h4>Distribution of Bad Physical Health Days by Sex</h4>
+<pre class="r"><code>brfss_data |&gt; 
+    drop_na(physical_health_not_good_days) |&gt; 
+    drop_na(sex) |&gt; 
+  
+  ggplot(aes(x = sex, fill = physical_health_not_good_days)) +
+    geom_bar(position = &quot;fill&quot;) +
+    scale_fill_manual(
+    values = c(
+      &quot;0&quot; = &quot;darkolivegreen2&quot;,
+      &quot;1-13&quot; = &quot;yellow2&quot;,
+      &quot;14+&quot; = &quot;brown2&quot;
+    ),
+    name = &quot;# of Bad Physical Health Days&quot;
+  ) +
+    labs(
+      x = &quot;Sex&quot;,
+      y = &quot;Proportion&quot;,
+      title = &quot;Distribution of Bad Physical Health Days By Sex&quot;
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>We can see that overall distributions are very similar across males
+and females. The proportion reporting 14+ days is relatively small and
+nearly identical between sexes. The similarity in patterns can show that
+sex differences are unlikely to significantly confound associations
+unless interacting with age or other factors.</p>
+</div>
+<div id="distribution-of-depressive-order-by-income-level"
+class="section level4">
+<h4>Distribution of Depressive Order by Income Level</h4>
+<pre class="r"><code>brfss_data |&gt; 
+  mutate(
+    income_level = factor(
+      income_level,
+      levels = c(
+        &quot;Less than $10,000&quot;,
+        &quot;$10,000 to &lt; $15,000&quot;,
+        &quot;$15,000 to &lt; $20,000&quot;,
+        &quot;$20,000 to &lt; $25,000&quot;,
+        &quot;$25,000 to &lt; $35,000&quot;,
+        &quot;$35,000 to &lt; $50,000&quot;,
+        &quot;$50,000 to &lt; $75,000&quot;,
+        &quot;$75,000 or more&quot;)
+    )
+  ) |&gt; 
+  drop_na(depressive_disorder) |&gt; 
+  drop_na(income_level) |&gt; 
+  
+  ggplot(aes(x = income_level, fill = depressive_disorder)) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(
+      &quot;No&quot; = &quot;steelblue2&quot;,
+      &quot;Yes&quot; = &quot;red4&quot;
+    ),
+    name = &quot;Depressive Disorder&quot;
+  ) +
+  labs(
+    x = &quot;Income Level&quot;,
+    y = &quot;Proportion&quot;,
+    title = &quot;Distribution of Depressive Order by Income Level&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>The lowest-income groups (less than $10,000 and $10,000 to
+&lt;$15,000) have the highest proportions of individuals reporting a
+depressive disorder. As income decreases, the proportion of respondents
+with depressive disorder increases.</p>
+</div>
+<div id="distribution-of-binge-drinking-by-age-group"
+class="section level4">
+<h4>Distribution of Binge drinking by Age Group</h4>
+<pre class="r"><code>brfss_data |&gt; 
+  drop_na(binge_drink) |&gt; 
+  drop_na(age_group_5yr) |&gt; 
+  
+  ggplot(aes(x = age_group_5yr, fill = binge_drink)) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(
+      &quot;No&quot; = &quot;steelblue2&quot;,
+      &quot;Yes&quot; = &quot;red4&quot;
+    ),
+    name = &quot;Binge Drinker&quot;
+  ) +
+  labs(
+    x = &quot;Age Group&quot;,
+    y = &quot;Proportion&quot;,
+    title = &quot;Distribution of Binge Drinkers by Age Group&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="eda_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>We can see that binge drinking is most common among younger adults
+with the peak in the 25-29 age group. It steadily declines as age
+increases.</p>
+</div>
+</div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -344,7 +1128,41 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
