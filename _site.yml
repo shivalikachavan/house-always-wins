@@ -6,7 +6,13 @@ navbar:
     - text: "Data"
       href: data_wrangling.html
     - text: "Exploratory Data Analysis"
-      href: eda.html
+      menu:
+        - text: "Sports Betting"
+          href: eda.html#Sports_Betting
+        - text: "BRFSS"
+          href: eda.html#BRFSS
+        - text: "Demographic Dashboard"
+          href: shiny.html
     - text: "Additional Analysis"
       href: additional_analysis.html
     - text: "So what?"
