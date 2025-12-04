@@ -72,6 +72,7 @@ sb_rev_by_month |>
   ) +
   #scale_color_(name = NULL) +
   scale_color_discrete(name = NULL, labels = c("handle" = "Total Handle", "legal" = "n States Legal")) +
+  scale_color_manual(values = c("handle" = "darkgreen", "legal" = "cornflowerblue"), name = NULL, labels = c("handle" = "Total Handle", "legal" = "n States Legal")) +
   labs(
     title = "Total Sports Handle and Number of States with Legal Sports Betting",
     x = "Date"
@@ -125,7 +126,9 @@ sb_rev_by_month |>
     values = c("Dotted" = "dotted", "Solid" = "solid"), 
     labels = c("Dotted" = "NFL Regular Season", "Solid" = "Super Bowl") 
   ) + 
+  theme_minimal() +
   theme(legend.position="bottom")
+  
 ```
 
 The largest peak in the betting handle clearly coincides with the NFL regular season in September, and a smaller dip aligns with the season's end around the Super Bowl.
@@ -165,6 +168,7 @@ sb_rev_by_month |>
     values = c("Solid" = "solid"), 
     labels = c("Solid" = "March Madness") 
   ) + 
+  theme_minimal() +
   theme(legend.position="bottom")
 
 ```
@@ -174,9 +178,7 @@ A secondary peak in betting handle occurs during March Madness. This is importan
 
 ### Cumulative Handle by State
 
-This code uses plotly, which doesn't render to github document. There is a static image with no interactivity:
-
-```{r eval=FALSE}
+```{r}
 sb_rev_by_state = sb_rev_by_state |> 
   filter(market != "Total") |> 
   left_join(state_fips, join_by(market == state)) |> 
@@ -219,7 +221,7 @@ fig = fig |>
   ) |> 
   colorbar(title = "Millions USD") |> 
   layout(
-    title = 'Cumulative Handle by State', #<br>(Hover for breakdown)',
+    title = 'Cumulative Handle by State <br>(Hover for breakdown)',
     geo = g
   )
 
@@ -374,12 +376,16 @@ brfss_data |>
   ggplot(aes(x = n_bad_days, fill = year)) +
   geom_bar(position = "dodge") +
   scale_x_continuous(breaks = c(0, 7, 14, 21, 31), labels = c(0, 7, 14, 21, 31)) +
+  scale_fill_manual(values = c("2017" = "cadetblue3", "2024" = "darkslateblue")) +
   facet_wrap(~outcome) +
   labs(
     title = "Distribution of Poor Health Days (2017 vs. 2024)",
     x = "Number of Days of Poor Health (Past 30 Days)",
     y = "Count of Respondents"
-  )
+  ) +
+  
+  theme_minimal() +
+  theme(legend.position="bottom")
 ```
 
 Given the concentration of responses at 0 days, we decided to use a binary outcome variable like `any_physical_health_not_good_days` as the outcome variable. This also follows what Couture, et. al. used in their analysis. It also simplified statistical tests that we decided to do later on.
