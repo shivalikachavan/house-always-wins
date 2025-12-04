@@ -425,7 +425,6 @@ change, and the color indicates statistical significance.</p>
   factor_significant()
 
 combine_plots(prop_tests_state)</code></pre>
-<p><img src="additional_analysis_files/figure-html/unnamed-chunk-1-1.png" width="95%" /></p>
 <p>The second test we wanted to run used each state’s specific
 legalization date, <code>sb_legal</code>, as the inflection point. We
 also repeated this test looking specifically at adults under 50 due to
@@ -448,7 +447,6 @@ they’ve placed a sports bet in the past year.”</p>
   factor_significant()
 
 combine_plots(prop_tests_sb_legal)</code></pre>
-<p><img src="additional_analysis_files/figure-html/unnamed-chunk-2-1.png" width="95%" /></p>
 <pre class="r"><code>prop_tests_sb_legal = 
   brfss_data |&gt; 
   filter(age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;, &quot;30-34&quot;, &quot;35-39&quot;, &quot;40-44&quot;, &quot;45-49&quot;)) |&gt; 
@@ -464,9 +462,46 @@ combine_plots(prop_tests_sb_legal)</code></pre>
   factor_significant()
 
 combine_plots(prop_tests_sb_legal)</code></pre>
-<p><img src="additional_analysis_files/figure-html/unnamed-chunk-3-1.png" width="95%" /></p>
-<p>##Fischer’s exact test #### Relative Risk of Poor Mental Health
-Outcomes in Legal vs. Non-Legal states in 2024</p>
+<div class="scroll-container">
+<h3>
+Benchmark
+</h3>
+<img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark">
+<h3>
+Sports Betting Legal
+</h3>
+<img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal">
+<h3>
+Sports Betting Legal (Age &lt; 50)
+</h3>
+<p><img src="additional_analysis_files/figure-html/prop_test_sb_legal_age.png" alt="Sports Betting Legal (Age < 50)"></p>
+</div>
+<style>
+/* CSS to create the scrollable gallery */
+.scroll-container {
+    /* Set the fixed height of the viewing window */
+    max-height: 1000px; 
+    /* This is the key: enables the vertical scroll bar */
+    overflow-y: auto; 
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.scroll-container img {
+    /* Ensures the image fills the container width */
+    width: 100%; 
+    height: auto;
+    margin-bottom: 10px; 
+}
+</style>
+</div>
+<div id="fischers-exact-test" class="section level2">
+<h2>Fischer’s exact test</h2>
+<div
+id="relative-risk-of-poor-mental-health-outcomes-in-legal-vs.-non-legal-states-in-2024"
+class="section level4">
+<h4>Relative Risk of Poor Mental Health Outcomes in Legal vs. Non-Legal
+states in 2024</h4>
 <p>In 2024, what is the risk of having poor mental health outcomes based
 on state legalization?</p>
 <p>Exposure: betting legalization</p>
@@ -630,6 +665,7 @@ binge_drink_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
 </tbody>
 </table>
 </div>
+</div>
 <div id="linear-regression" class="section level2">
 <h2>Linear Regression</h2>
 <div id="any-bad-mental-health-days" class="section level4">
@@ -639,7 +675,7 @@ binge_drink_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
     month = lubridate::floor_date(date, unit = &quot;month&quot;)
  )
 ## Rows: 37 Columns: 6
-## ── Column specification ────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (2): state, abbr
 ## dbl  (1): fips
@@ -649,7 +685,7 @@ binge_drink_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 ## Multiple files in zip: reading &#39;brfss_clean_2017_2024.csv&#39;
 ## Rows: 2749477 Columns: 39
-## ── Column specification ────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr   (2): imonth, iday
 ## dbl  (36): qstver, dispcode, state, seqno, iyear, sex, marital, educag, empl...
@@ -824,7 +860,8 @@ pred_df |&gt;
 ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
 ## ℹ Please use `linewidth` instead.
 ## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.</code></pre>
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.</code></pre>
 <p><img src="additional_analysis_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
 </div>
@@ -982,48 +1019,6 @@ of experiencing mentally unhealthy days, especially among adults aged
 25–44, and this pattern is similar for both men and women. The effect
 does not appear uniform across age groups, indicating a meaningful
 interaction between age and policy.</p>
-<div id="overall-conclusions" class="section level2">
-<h2>Overall Conclusions</h2>
-<p>After adjusting for sex and age, living in a state with legal sports
-betting is associated with higher probability of having mentally
-unhealthy days, especially among adults aged 25–44. The effect size is
-around 5–8 percentage points, depending on age group. Men and women are
-affected similarly, which doesn’t align with the Couture et
-al. findings, likely because we were looking at a larger dataset which
-included post-COVID-19 observations. Younger adults (18–24) have the
-highest baseline mental health risk, but legalization effects are
-somewhat stronger for those 25–44. These associations cannot establish
-causality (due to cross-sectional BRFSS data), but they indicate a
-robust correlation.</p>
-</div>
-<div id="limitations" class="section level2">
-<h2>Limitations</h2>
-<p>We are not following the same participants over time which prevents
-establishing causal relationships. We cannot determine whether the
-legalization of sports betting directly contributed to worsening health
-outcomes. Also, the measure of health outcomes are self-reported which
-may introduce recall bias and response bias. Respondents may
-inaccurately recall their health over the past 30 days and under-report
-sensitive behaviors due to stigma.</p>
-<p>The study period includes the COVID-19 pandemic which potentially
-serves as a major confounding event. Changes in health outcomes related
-to the pandemic may coincide with legalization, confounding
-associations. Our exposure variable, <code>sb_legal</code> does not
-account for individual sports betting behavior or the level/intensity of
-exposure, therefore, which only allowed us to address population-level
-associations based on legalization exposure.</p>
-</div>
-<div id="additional-analyses" class="section level2">
-<h2>Additional Analyses</h2>
-<p>There are many additional analyses that could be done on the dataset,
-given more time. This includes finely tuning the regression model and
-addressing confounding factors, like COVID. We observed that mental
-health outcomes decreased overall from 2017-2024, but establishing a
-causal effect of sports betting would require further analysis. We did
-not get a chance to look at the effect of online vs. retail-only sports
-betting legalization (which varies state-to-state), but this would be
-another interesting policy effect to examine.</p>
-</div>
 </div>
 
 

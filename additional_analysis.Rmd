@@ -51,7 +51,7 @@ To test the relationship between sports betting legalization and health outcomes
 Our one-sided two sample proportion tests are examining whether there is a significant change (baseline is lower) in the rates of the 4 health outcomes. In the first test, for example, the null hypothesis is that the rate of a particular outcome (e.g. binge drinking) is the same in 2017 and in 2024. The alternative is that the rate of binge drinking was less in 2017 that it was in 2024. 
 
 These tests looks at the raw change over time, regardless of when legalization occurred, providing a general benchmark. The lines show the change, and the color indicates statistical significance. 
-```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%"}
+```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%", eval=FALSE}
 prop_tests_state = 
   brfss_data |> 
   filter(year(date) %in% c(2017, 2024)) |>
@@ -73,7 +73,7 @@ The second test we wanted to run used each state's specific legalization date, `
 
 According to [PEW](https://www.pewresearch.org/short-reads/2025/10/02/americans-increasingly-see-legal-sports-betting-as-a-bad-thing-for-society-and-sports/) research, "Young adults are more likely than older Americans to say they’ve placed a sports bet in the past year."
 
-```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%"}
+```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%", eval=FALSE}
 prop_tests_sb_legal = 
   brfss_data |> 
   select(state, sb_legal, all_of(outcome_vars)) |>
@@ -90,7 +90,7 @@ prop_tests_sb_legal =
 combine_plots(prop_tests_sb_legal)
 ```
 
-```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%"}
+```{r fig.width = 12, fig.asp = 0.9,  out.width = "95%", eval=FALSE}
 prop_tests_sb_legal = 
   brfss_data |> 
   filter(age_group_5yr %in% c("18-24", "25-29", "30-34", "35-39", "40-44", "45-49")) |> 
@@ -108,7 +108,35 @@ prop_tests_sb_legal =
 combine_plots(prop_tests_sb_legal)
 ```
 
-##Fischer's exact test
+<div class="scroll-container">
+<h3>Benchmark</h3>
+  <img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark">
+<h3>Sports Betting Legal</h3>
+  <img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal">
+<h3>Sports Betting Legal (Age < 50)</h3>
+  <img src="additional_analysis_files/figure-html/prop_test_sb_legal_age.png" alt="Sports Betting Legal (Age < 50)">
+</div>
+
+<style>
+/* CSS to create the scrollable gallery */
+.scroll-container {
+    /* Set the fixed height of the viewing window */
+    max-height: 1000px; 
+    /* This is the key: enables the vertical scroll bar */
+    overflow-y: auto; 
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.scroll-container img {
+    /* Ensures the image fills the container width */
+    width: 100%; 
+    height: auto;
+    margin-bottom: 10px; 
+}
+</style>
+
+## Fischer's exact test
 #### Relative Risk of Poor Mental Health Outcomes in Legal vs. Non-Legal states in 2024
 
 In 2024, what is the risk of having poor mental health outcomes based on state legalization?
@@ -302,18 +330,4 @@ The graph visually confirms the pattern in the coefficients: among younger adult
 
 Sports betting legalization is associated with a higher probability of experiencing mentally unhealthy days, especially among adults aged 25–44, and this pattern is similar for both men and women.
 The effect does not appear uniform across age groups, indicating a meaningful interaction between age and policy.
-
-## Overall Conclusions
-
-After adjusting for sex and age, living in a state with legal sports betting is associated with higher probability of having mentally unhealthy days, especially among adults aged 25–44. The effect size is around 5–8 percentage points, depending on age group. Men and women are affected similarly, which doesn't align with the Couture et al. findings, likely because we were looking at a larger dataset which included post-COVID-19 observations. Younger adults (18–24) have the highest baseline mental health risk, but legalization effects are somewhat stronger for those 25–44. These associations cannot establish causality (due to cross-sectional BRFSS data), but they indicate a robust correlation.
-
-## Limitations
-
-We are not following the same participants over time which prevents establishing causal relationships. We cannot determine whether the legalization of sports betting directly contributed to worsening health outcomes. Also, the measure of health outcomes are self-reported which may introduce recall bias and response bias. Respondents may inaccurately recall their health over the past 30 days and under-report sensitive behaviors due to stigma.
-
-The study period includes the COVID-19 pandemic which potentially serves as a major confounding event. Changes in health outcomes related to the pandemic may coincide with legalization, confounding associations. Our exposure variable, `sb_legal` does not account for individual sports betting behavior or the level/intensity of exposure, therefore, which only allowed us to address population-level associations based on legalization exposure.
-
-## Additional Analyses
-
-There are many additional analyses that could be done on the dataset, given more time. This includes finely tuning the regression model and addressing confounding factors, like COVID. We observed that mental health outcomes decreased overall from 2017-2024, but establishing a causal effect of sports betting would require further analysis. We did not get a chance to look at the effect of online vs. retail-only sports betting legalization (which varies state-to-state), but this would be another interesting policy effect to examine.
 
