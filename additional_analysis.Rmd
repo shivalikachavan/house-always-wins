@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, message = FALSE}
-knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, fig.align = "center")
 
 library(tidyverse)
 library(haven)

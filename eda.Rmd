@@ -8,7 +8,7 @@ output:
   
 ---
 ```{r setup, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, fig.align = "center")
 
 library(tidyverse)
 library(haven)
@@ -44,8 +44,6 @@ outcome_vars = c("any_physical_health_not_good_days", "any_mental_health_not_goo
 
 ## Sports Betting
 
-### Total Handle and Number of States with Legal Sports Betting
-
 We begin our analysis by exploring trends in the sports betting industry itself and how these trends align with the growing number of states that legalized sports betting over time.  
 
 ```{r}
@@ -56,21 +54,33 @@ get_n_states_legal = function(input_month) {
 sb_rev_by_month = sb_rev_by_month |> 
   mutate(
     n_states_legal = sapply(month, get_n_states_legal)
-  ) 
+  )
 
-scale_factor = max(pull(sb_rev_by_month,n_states_legal)) / max(pull(sb_rev_by_month,handle))
+sb_rev_by_month = sb_rev_by_month |>
+  mutate(
+    handle_B = handle / 1e9 
+  )
+
+scale_factor = max(pull(sb_rev_by_month, n_states_legal)) / max(pull(sb_rev_by_month, handle_B))
 
 sb_rev_by_month |> 
   ggplot(aes(x = month)) +
-  geom_line(aes(y=handle, color="handle")) +
-  geom_line(aes(y=n_states_legal / scale_factor, color="legal")) +
+  geom_line(aes(y = handle_B, color = "handle"), linewidth = 1.1) +
+  geom_line(aes(y = n_states_legal / scale_factor, color = "legal"), linewidth = 1.1) +
+  
   scale_y_continuous(
-    name = "Handle ($)",
-    sec.axis = sec_axis(~ . * scale_factor, name="States Legal")
+    name = "Handle (in USD, Billions)",
+    labels = scales::comma, 
+    
+    sec.axis = sec_axis(~ . * scale_factor, name = "States Legal", labels = scales::comma)
   ) +
-  #scale_color_(name = NULL) +
-  scale_color_discrete(name = NULL, labels = c("handle" = "Total Handle", "legal" = "n States Legal")) +
-  scale_color_manual(values = c("handle" = "darkgreen", "legal" = "cornflowerblue"), name = NULL, labels = c("handle" = "Total Handle", "legal" = "n States Legal")) +
+  
+  scale_color_manual(
+    name = NULL,
+    values = c("handle" = "darkgreen", "legal" = "cornflowerblue"),
+    labels = c("handle" = "Total Handle", "legal" = "n States Legal")
+  ) +
+  
   labs(
     title = "Total Sports Handle and Number of States with Legal Sports Betting",
     x = "Date"
@@ -131,7 +141,6 @@ sb_rev_by_month |>
 
 The largest peak in the betting handle clearly coincides with the NFL regular season in September, and a smaller dip aligns with the season's end around the Super Bowl.
 
-
 ##### NCAA March Madness
 ```{r}
 ncaa_event_dates = tibble(
@@ -172,7 +181,6 @@ sb_rev_by_month |>
 ```
 
 A secondary peak in betting handle occurs during March Madness. This is important because it represents a period of intense, short-term betting interest.
-
 
 ### Cumulative Handle by State
 
@@ -226,15 +234,13 @@ fig = fig |>
 fig
 ```
 
-
-### Handle by State in 2024
-
 ```{r}
 sb_rev_by_state_month |> 
+  mutate(handle_B = handle / 1e9) |>
   mutate(year = year(month)) |>   # Extract year
   group_by(state, year) |>        # Group by year
   summarize(
-    total_handle = sum(handle, na.rm = TRUE),
+    total_handle = sum(handle_B, na.rm = TRUE),
   ) |> 
   filter(year == 2024) |> 
   ungroup() |> 
@@ -247,15 +253,12 @@ sb_rev_by_state_month |>
   labs(
     title = "Sports Betting Handle by State in 2024",
     x = "State",
-    y = "Handle ($)"
+    y = "Handle (in USD, Billions)"
   ) +
   theme_minimal()
 ```
 
 We can see New York has the highest handle which makes sense since it is the most populous state. We can get a sense of the popularity of sports gambling by looking at total handle per capita using US census data for total population by state.
-
-
-### Handle by State per Capita in 2024
 
 ```{r}
 sb_rev_by_state_month |> 
@@ -285,14 +288,11 @@ sb_rev_by_state_month |>
 
 We can see that Nevada and New Jersey have the highest handle per capita.
 
-
-
 ## BRFSS
 
 ### Data Completeness
 
 One of our primary concerns with data was ensuring that the key outcome variables were reported consistently from 2017 to 2024.
-
 
 ```{r}
 all_outcome_vars = c("general_health", "general_health_refactored", "michd",
@@ -565,6 +565,7 @@ plot_bingedrink = function(demo_var, plot_title) {
 
 #### Distribution of Bad Mental Health Days by Age Group:
 
+Below are some selected plots, but you can view the complete demographic distributions on our [Shiny Dashboard](**ADD LINK HERE**).
 
 ```{r}
 brfss_data |> 
