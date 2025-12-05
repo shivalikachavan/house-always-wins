@@ -550,7 +550,7 @@ We explored how our primary health outcomes were distributed across demographic 
 
 We used stacked bar plots to visualize these distributions with each bar representing a demographic category, and the bar divided into segments to show the proportion of individuals falling into each health outcome. We used proportions instead of raw counts since the demographic groups differ in size within the BRFSS dataset.
 
-To efficiently visualize the distribution of these health outcome across any demographic variable, we constructed a set of plotting functions for each outcome. For example, for `mental_health_not_good_days`:
+To efficiently visualize the distribution of these health outcome across any demographic variable, we constructed a set of plotting functions for each outcome.
 
 ```{r}
 #Bad mental health days outcome
