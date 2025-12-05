@@ -865,7 +865,7 @@ plot_bingedrink = function(demo_var, plot_title) {
 
 #### Distribution of Bad Mental Health Days by Age Group:
 
-Below are some selected plots, but you can view the complete demographic distributions on our [Shiny Dashboard](**ADD LINK HERE**).
+Below are some selected plots, but you can view the complete demographic distributions on our [Shiny Dashboard](https://ab6168.shinyapps.io/shiny_app/).
 
 ```{r}
 brfss_data |> 

@@ -12,7 +12,7 @@ navbar:
         - text: "BRFSS"
           href: eda.html#BRFSS
         - text: "Demographic Dashboard"
-          href: shiny.html
+          href: https://ab6168.shinyapps.io/shiny_app/
     - text: "Additional Analysis"
       href: additional_analysis.html
     - text: "So what?"
